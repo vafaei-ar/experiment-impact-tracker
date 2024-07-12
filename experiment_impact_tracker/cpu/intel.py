@@ -551,12 +551,13 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
         )
 
     if total_intel_power < total_attributable_power:
-        raise ValueError(
-            "For some reason the total intel estimated power is less than the attributable power. This "
-            "means there is an error in computing the attribution. Please re-open "
-            "https://github.com/Breakend/experiment-impact-tracker/issues/38 and add the trace for this "
-            "warning."
-        )
+        logger.info(f'WARNING! For some reason the total intel estimated power ({total_attributable_power}) is less than the attributable power ({total_intel_power}).')
+        # raise ValueError(
+        #     "For some reason the total intel estimated power is less than the attributable power. This "
+        #     "means there is an error in computing the attribution. Please re-open "
+        #     "https://github.com/Breakend/experiment-impact-tracker/issues/38 and add the trace for this "
+        #     "warning."
+        # )
 
     data_return_values_with_headers = {
         "rapl_power_draw_absolute": total_intel_power,

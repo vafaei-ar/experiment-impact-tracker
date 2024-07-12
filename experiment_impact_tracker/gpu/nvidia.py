@@ -152,7 +152,15 @@ def get_nvidia_gpu_power(pid_list, logger=None, **kwargs):
     out_str_final = re.sub("\s+\n", "\n", out_str_final)  # else pd will mis-align
     out_str_final = out_str_final.strip()
     df = pd.read_csv(StringIO(out_str_final), engine="python", delimiter="\t")
-    process_percentage_used_gpu = df.groupby(["gpu", "pid"]).mean().reset_index()
+    df = df.drop(columns=['type','command'])
+    try:
+        process_percentage_used_gpu = df.groupby(["gpu", "pid"]).mean().reset_index()
+    except Exception as e:
+        print(20*'#');print(20*'#');
+        print(e)
+        print(df)
+        print(20*'#');print(20*'#');
+        exit()
 
     p = Popen(["nvidia-smi", "-q", "-x"], stdout=PIPE)
     outs, errors = p.communicate()
@@ -164,7 +172,7 @@ def get_nvidia_gpu_power(pid_list, logger=None, **kwargs):
     per_gpu_relative_percent_usage = {}
     absolute_power = 0
     per_gpu_performance_states = {}
-
+    
     for gpu_id, gpu in enumerate(xml.findall("gpu")):
         gpu_data = {}
 
@@ -189,7 +197,15 @@ def get_nvidia_gpu_power(pid_list, logger=None, **kwargs):
         gpu_data["utilization"] = {"gpu_util": gpu_util, "memory_util": memory_util}
 
         # get power
-        power_readings = gpu.findall("power_readings")[0]
+        try:
+            # power_readings = gpu.findall("power_readings")[0]
+            power_readings = gpu.findall("gpu_power_readings")[0]
+        except Exception as e:
+            print(20*'#');print(20*'#');
+            print(e)
+            print(xml)
+            print(20*'#');print(20*'#');
+            exit()
         power_draw = power_readings.findall("power_draw")[0].text
 
         gpu_data["power_readings"] = {"power_draw": power_draw}
